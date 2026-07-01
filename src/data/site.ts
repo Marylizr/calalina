@@ -66,12 +66,12 @@ const shared = {
       label: "Frutas",
     },
     {
-      title: "Verduras",
+      title: "Hortalizas",
       image:
         "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913998/3_u55wzm.png",
       video:
         "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913995/animacion3_bpkzh0.mp4",
-      label: "Verduras",
+      label: "Hortalizas",
     },
     {
       title: "Verduras",

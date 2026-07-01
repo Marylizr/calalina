@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type AnimationItem = {
   title: string;
@@ -15,12 +15,34 @@ type HeroAnimationShowcaseProps = {
 };
 
 const AUTOPLAY_INTERVAL_MS = 6500;
+const VIDEO_FADE_OUT_MS = 280;
 
 export function HeroAnimationShowcase({ items }: HeroAnimationShowcaseProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fadeTimeoutRef = useRef<number | null>(null);
 
   const activeItem = items[activeIndex] ?? items[0];
+
+  const transitionToIndex = useCallback(
+    (nextIndex: number) => {
+      if (nextIndex === activeIndex || items.length === 0) {
+        return;
+      }
+
+      if (fadeTimeoutRef.current) {
+        window.clearTimeout(fadeTimeoutRef.current);
+      }
+
+      setIsFading(true);
+      fadeTimeoutRef.current = window.setTimeout(() => {
+        setActiveIndex(nextIndex);
+        window.requestAnimationFrame(() => setIsFading(false));
+      }, VIDEO_FADE_OUT_MS);
+    },
+    [activeIndex, items.length],
+  );
 
   useEffect(() => {
     if (items.length <= 1) {
@@ -28,11 +50,19 @@ export function HeroAnimationShowcase({ items }: HeroAnimationShowcaseProps) {
     }
 
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % items.length);
+      transitionToIndex((activeIndex + 1) % items.length);
     }, AUTOPLAY_INTERVAL_MS);
 
     return () => window.clearInterval(timer);
-  }, [items.length, activeIndex]);
+  }, [activeIndex, items.length, transitionToIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (fadeTimeoutRef.current) {
+        window.clearTimeout(fadeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     videoRef.current?.play().catch(() => {
@@ -50,7 +80,9 @@ export function HeroAnimationShowcase({ items }: HeroAnimationShowcaseProps) {
         <video
           key={activeItem.video}
           ref={videoRef}
-          className="h-full w-full object-cover"
+          className={`h-full w-full object-cover transition duration-700 ease-out ${
+            isFading ? "opacity-0 scale-[1.01]" : "opacity-100 scale-100"
+          }`}
           src={activeItem.video}
           poster={activeItem.image}
           autoPlay
@@ -59,9 +91,6 @@ export function HeroAnimationShowcase({ items }: HeroAnimationShowcaseProps) {
           playsInline
           preload="metadata"
         />
-        <div className="absolute left-5 top-5 rounded-full bg-[var(--color-chalkboard-black)] px-4 py-2 text-sm font-black text-white shadow-lg sm:px-5 sm:text-base">
-          {activeItem.title}
-        </div>
       </div>
 
       <div className="mt-4 grid max-w-full grid-flow-col auto-cols-[88px] gap-3 overflow-x-auto px-1 pb-3 sm:auto-cols-fr sm:grid-flow-row sm:grid-cols-4 sm:gap-4">
@@ -73,7 +102,7 @@ export function HeroAnimationShowcase({ items }: HeroAnimationShowcaseProps) {
               key={item.video}
               type="button"
               aria-pressed={isActive}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => transitionToIndex(index)}
               className={`h-[5.5rem] min-w-0 snap-start overflow-hidden rounded-2xl p-0 text-center shadow-[0_14px_28px_rgba(117,64,28,0.18)] transition hover:-translate-y-0.5 min-[390px]:h-24 sm:h-28 ${
                 isActive
                   ? "bg-white ring-2 ring-[var(--color-calalina-red)]"

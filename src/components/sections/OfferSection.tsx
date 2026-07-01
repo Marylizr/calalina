@@ -29,13 +29,13 @@ export function OfferSection({ content }: OfferSectionProps) {
         <h2 className="max-w-3xl font-serif text-4xl font-black leading-tight text-[var(--color-dark-ink)] sm:text-5xl">
           {content.title}
         </h2>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-5 lg:grid-cols-4">
           {content.cards.map((card) => (
             <article
               key={card.title}
-              className="group rounded-[1.5rem] border border-[var(--color-deep-green)]/10 bg-white/78 p-6 text-center shadow-[0_14px_34px_rgba(16,43,86,0.08)] transition duration-300 hover:-translate-y-1 hover:bg-white"
+              className="group rounded-[1.2rem] border border-[var(--color-deep-green)]/10 bg-white/78 p-4 text-center shadow-[0_14px_34px_rgba(16,43,86,0.08)] transition duration-300 hover:-translate-y-1 hover:bg-white sm:rounded-[1.5rem] sm:p-6"
             >
-              <div className="mx-auto flex h-24 w-24 items-center justify-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center sm:h-24 sm:w-24">
                 <Image
                   src={offerIconUrls[card.icon]}
                   alt=""
@@ -44,14 +44,14 @@ export function OfferSection({ content }: OfferSectionProps) {
                   className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
                 />
               </div>
-              <h3 className="mt-6 text-xl font-black text-[var(--color-dark-ink)]">
+              <h3 className="mt-4 text-base font-black leading-tight text-[var(--color-dark-ink)] sm:mt-6 sm:text-xl">
                 {card.title}
               </h3>
-              <p className="mt-3 text-sm leading-6 text-[var(--color-muted-text)]">
+              <p className="mt-2 text-xs font-semibold leading-5 text-[var(--color-muted-text)] sm:mt-3 sm:text-sm sm:font-normal sm:leading-6">
                 {card.text}
               </p>
               <a
-                className="mt-5 inline-flex text-sm font-black text-[var(--color-deep-green)]"
+                className="mt-3 inline-flex text-xs font-black text-[var(--color-deep-green)] sm:mt-5 sm:text-sm"
                 href={card.href ?? "#productes"}
               >
                 {content.discover} →
