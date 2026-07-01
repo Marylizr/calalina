@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" role="img" aria-label="Calalina hero animation reference">
+  <rect width="1000" height="800" fill="#FFF5E1"/>
+  <circle cx="170" cy="150" r="130" fill="#FFC83D" opacity=".38"/>
+  <circle cx="845" cy="150" r="170" fill="#5FA83B" opacity=".18"/>
+  <path d="M80 610c210-70 380-62 520-10s230 55 340-18v218H80z" fill="#F8EFE2"/>
+  <rect x="210" y="575" width="580" height="135" rx="26" fill="#A96532"/>
+  <path d="M230 615h540M260 575v135M390 575v135M520 575v135M650 575v135" stroke="#7d4420" stroke-width="14" opacity=".45"/>
+  <g transform="translate(155 215)">
+    <circle cx="110" cy="110" r="82" fill="#E5261F"/>
+    <rect x="103" y="18" width="18" height="42" rx="9" fill="#2F6B35"/>
+    <ellipse cx="143" cy="42" rx="34" ry="16" fill="#5FA83B" transform="rotate(-24 143 42)"/>
+  </g>
+  <g transform="translate(395 90)">
+    <ellipse cx="105" cy="170" rx="78" ry="118" fill="#5FA83B"/>
+    <path d="M96 58c40 52 48 126 8 222" stroke="#2F6B35" stroke-width="12" fill="none" opacity=".45"/>
+  </g>
+  <g transform="translate(632 250)">
+    <circle cx="110" cy="110" r="86" fill="#F47C20"/>
+    <circle cx="110" cy="110" r="58" fill="#FFC83D" opacity=".34"/>
+  </g>
+  <g transform="translate(510 365)">
+    <rect width="160" height="110" rx="22" fill="#1E1E1A"/>
+    <text x="80" y="48" text-anchor="middle" font-family="Arial" font-size="23" font-weight="700" fill="#FFF5E1">Racó llatí</text>
+    <text x="80" y="78" text-anchor="middle" font-family="Arial" font-size="18" fill="#FFC83D">Malta · Arepas</text>
+  </g>
+  <g fill="#102B56" opacity=".16">
+    <circle cx="115" cy="410" r="16"/>
+    <circle cx="870" cy="435" r="12"/>
+    <circle cx="310" cy="120" r="10"/>
+  </g>
+</svg>
