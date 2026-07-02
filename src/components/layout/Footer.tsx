@@ -81,7 +81,18 @@ export function Footer({ locale, content }: FooterProps) {
         </form>
       </div>
       <div className="border-t border-white/10 px-4 py-5 text-center text-sm text-white/62">
-        {content.copyright}
+        <p>{content.copyright}</p>
+        <p className="mt-2">
+          Powered by:{" "}
+          <a
+            href="https://pixeltrendstudio.com/en"
+            target="_blank"
+            rel="noreferrer"
+            className="font-black text-white transition hover:text-[var(--color-mango-yellow)]"
+          >
+            PixelTrend Studio LLC
+          </a>
+        </p>
       </div>
     </footer>
   );

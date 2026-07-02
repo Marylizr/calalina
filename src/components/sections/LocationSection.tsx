@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/Button";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import type { Locale } from "@/data/site";
+import { getOpeningHours } from "@/lib/googlePlaces";
 
 type LocationSectionProps = {
+  locale: Locale;
   content: {
     label: string;
     title: string;
@@ -22,15 +25,28 @@ type LocationSectionProps = {
     mapLabel: string;
     mapUrl: string;
     mapEmbedUrl: string;
+    googlePlaceId: string;
+    useGoogleHours: boolean;
+    googleHoursUpdatedText: string;
+    openStatusText: string;
+    closedStatusText: string;
     hours: { day: string; time: string }[];
     visitTitle: string;
     visitText: string;
+    specialNotice: string;
     cta: string;
     social: string[];
   };
 };
 
-export function LocationSection({ content }: LocationSectionProps) {
+export async function LocationSection({ locale, content }: LocationSectionProps) {
+  const openingHours = await getOpeningHours({
+    locale,
+    useGoogleHours: content.useGoogleHours,
+    googlePlaceId: content.googlePlaceId,
+    manualHours: content.hours,
+  });
+
   return (
     <section id="ubicacio" className="wood-section py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -48,7 +64,18 @@ export function LocationSection({ content }: LocationSectionProps) {
               </p>
               <p>
                 <span className="block font-black text-[var(--color-dark-ink)]">{content.scheduleLabel}</span>
-                {content.schedule}
+                {openingHours.source === "google" && openingHours.isOpenNow !== null ? (
+                  <span
+                    className={`mb-1 inline-flex rounded-full px-3 py-1 text-xs font-black ${
+                      openingHours.isOpenNow
+                        ? "bg-[var(--color-leaf-green)]/15 text-[var(--color-deep-green)]"
+                        : "bg-[var(--color-calalina-red)]/10 text-[var(--color-calalina-red)]"
+                    }`}
+                  >
+                    {openingHours.isOpenNow ? content.openStatusText : content.closedStatusText}
+                  </span>
+                ) : null}
+                <span className="block">{content.schedule}</span>
               </p>
               <p>
                 <span className="block font-black text-[var(--color-dark-ink)]">{content.websiteLabel}</span>
@@ -101,8 +128,29 @@ export function LocationSection({ content }: LocationSectionProps) {
               <h4 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--color-mango-yellow)]">
                 {content.scheduleLabel}
               </h4>
+              {openingHours.source === "google" ? (
+                <p className="mt-3 rounded-full bg-white/10 px-3 py-2 text-xs font-black text-white/86">
+                  {content.googleHoursUpdatedText}
+                </p>
+              ) : null}
+              {openingHours.source === "google" && openingHours.isOpenNow !== null ? (
+                <p
+                  className={`mt-3 rounded-full px-3 py-2 text-xs font-black ${
+                    openingHours.isOpenNow
+                      ? "bg-[var(--color-leaf-green)] text-white"
+                      : "bg-[var(--color-calalina-red)] text-white"
+                  }`}
+                >
+                  {openingHours.isOpenNow ? content.openStatusText : content.closedStatusText}
+                </p>
+              ) : null}
+              {content.specialNotice ? (
+                <p className="mt-3 rounded-2xl bg-[var(--color-mango-yellow)]/20 px-3 py-2 text-sm font-black text-white">
+                  {content.specialNotice}
+                </p>
+              ) : null}
               <dl className="mt-4 grid gap-3 text-sm">
-                {content.hours.map((item) => (
+                {openingHours.weeklyHours.map((item) => (
                   <div key={item.day} className="grid grid-cols-[6.5rem_1fr] gap-3">
                     <dt className="font-black text-white">{item.day}</dt>
                     <dd className="leading-5 text-white/78">{item.time}</dd>

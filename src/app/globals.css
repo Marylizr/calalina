@@ -189,13 +189,11 @@ main :where(article, figure, img, video) {
 @keyframes viewport-reveal {
   from {
     opacity: 0;
-    filter: blur(8px);
     transform: translate3d(0, 32px, 0) scale(0.98);
   }
 
   to {
     opacity: 1;
-    filter: blur(0);
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
@@ -208,6 +206,16 @@ main :where(article, figure, img, video) {
 
   50% {
     transform: translate3d(0, -18px, 0) rotate(6deg);
+  }
+}
+
+@keyframes cartDrawerIn {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
   }
 }
 

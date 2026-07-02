@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 import { localeLabels, locales, type Locale } from "@/data/site";
 
 const LOGO_SRC = "/images/brand/logo.png";
@@ -63,6 +64,7 @@ export function Header({ locale, navItems, content }: HeaderProps) {
         </nav>
 
         <div className="hidden items-center gap-4 lg:flex">
+          <CartDrawer locale={locale} />
           <LanguageSwitcher locale={locale} />
         </div>
 
@@ -96,6 +98,9 @@ export function Header({ locale, navItems, content }: HeaderProps) {
               </Link>
             ))}
           </nav>
+          <div className="mb-3">
+            <CartDrawer locale={locale} />
+          </div>
           <LanguageSwitcher locale={locale} />
         </div>
       ) : null}

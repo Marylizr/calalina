@@ -1,0 +1,334 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum AdminRole {
+  owner
+  manager
+  staff
+}
+
+enum ProductUnit {
+  kg
+  unit
+  tray
+  pack
+  box
+  bottle
+}
+
+enum StockMode {
+  exact
+  statusOnly
+}
+
+enum StockStatus {
+  available
+  lowStock
+  outOfStock
+}
+
+enum StorageType {
+  fridge
+  outside
+  firstOutsideThenFridge
+  separate
+  askInStore
+}
+
+enum InventoryMovementType {
+  restock
+  sale
+  manualAdjustment
+  waste
+  return
+}
+
+enum OrderStatus {
+  new
+  confirmed
+  preparing
+  readyForPickup
+  delivered
+  cancelled
+}
+
+enum FulfillmentMethod {
+  pickup
+  deliveryRequest
+}
+
+enum BlogStatus {
+  draft
+  published
+}
+
+enum BannerPlacement {
+  homeHero
+  topBar
+  seasonal
+  latinCorner
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          AdminRole @default(staff)
+  accounts      Account[]
+  sessions      Session[]
+  movements     InventoryMovement[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  nameCa    String
+  nameEs    String
+  nameEn    String
+  slug      String    @unique
+  sortOrder Int       @default(0)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id                   String              @id @default(cuid())
+  nameCa               String
+  nameEs               String
+  nameEn               String
+  slug                 String              @unique
+  descriptionCa        String?
+  descriptionEs        String?
+  descriptionEn        String?
+  shortDescriptionCa   String?
+  shortDescriptionEs   String?
+  shortDescriptionEn   String?
+  categoryId           String?
+  category             Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  price                Decimal             @db.Decimal(10, 2)
+  compareAtPrice       Decimal?            @db.Decimal(10, 2)
+  unit                 ProductUnit         @default(kg)
+  stockMode            StockMode           @default(statusOnly)
+  stockQuantity        Decimal?            @db.Decimal(10, 2)
+  stockStatus          StockStatus         @default(available)
+  stockMin             Decimal?            @db.Decimal(10, 2)
+  isActive             Boolean             @default(true)
+  availableOnline      Boolean             @default(true)
+  isFeatured           Boolean             @default(false)
+  isSeasonal           Boolean             @default(false)
+  isLatin              Boolean             @default(false)
+  isNew                Boolean             @default(false)
+  origin               String?
+  storageType          StorageType         @default(askInStore)
+  images               String[]
+  seoTitleCa           String?
+  seoTitleEs           String?
+  seoTitleEn           String?
+  seoDescriptionCa     String?
+  seoDescriptionEs     String?
+  seoDescriptionEn     String?
+  orderItems           OrderItem[]
+  inventoryMovements   InventoryMovement[]
+  relatedBlogPosts     BlogPost[]
+  seasonalHighlights   SeasonalHighlight[]
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+}
+
+model InventoryMovement {
+  id        String                @id @default(cuid())
+  productId String
+  product   Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      InventoryMovementType
+  quantity  Decimal               @db.Decimal(10, 2)
+  note      String?
+  createdBy String?
+  user      User?                 @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt DateTime              @default(now())
+}
+
+model Order {
+  id                String            @id @default(cuid())
+  customerName      String
+  customerPhone     String
+  customerEmail     String?
+  status            OrderStatus       @default(new)
+  fulfillmentMethod FulfillmentMethod @default(pickup)
+  pickupDate        DateTime?
+  notes             String?
+  internalNote      String?
+  subtotal          Decimal           @db.Decimal(10, 2)
+  total             Decimal           @db.Decimal(10, 2)
+  items             OrderItem[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model OrderItem {
+  id                  String      @id @default(cuid())
+  orderId             String
+  order               Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId           String?
+  product             Product?    @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productNameSnapshot String
+  unitPriceSnapshot   Decimal     @db.Decimal(10, 2)
+  quantity            Decimal     @db.Decimal(10, 2)
+  unit                ProductUnit
+  lineTotal           Decimal     @db.Decimal(10, 2)
+  createdAt           DateTime    @default(now())
+}
+
+model BlogPost {
+  id               String     @id @default(cuid())
+  titleCa          String
+  titleEs          String
+  titleEn          String
+  slug             String     @unique
+  excerptCa        String
+  excerptEs        String
+  excerptEn        String
+  contentCa        String
+  contentEs        String
+  contentEn        String
+  coverImage       String?
+  category         String
+  relatedProducts  Product[]
+  status           BlogStatus @default(draft)
+  publishedAt      DateTime?
+  seoTitleCa       String?
+  seoTitleEs       String?
+  seoTitleEn       String?
+  seoDescriptionCa String?
+  seoDescriptionEs String?
+  seoDescriptionEn String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model GalleryImage {
+  id         String   @id @default(cuid())
+  image      String   @unique
+  titleCa    String?
+  titleEs    String?
+  titleEn    String?
+  altCa      String
+  altEs      String
+  altEn      String
+  category   String?
+  isFeatured Boolean  @default(false)
+  isVisible  Boolean  @default(true)
+  showOnHome Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Banner {
+  id            String          @id @default(cuid())
+  titleCa       String
+  titleEs       String
+  titleEn       String
+  descriptionCa String?
+  descriptionEs String?
+  descriptionEn String?
+  image         String?
+  ctaLabelCa    String?
+  ctaLabelEs    String?
+  ctaLabelEn    String?
+  ctaHref       String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  isActive      Boolean         @default(false)
+  placement     BannerPlacement
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model StoreSettings {
+  id                     String   @id @default(cuid())
+  businessName           String
+  address                String
+  googlePlaceId          String?
+  googleMapsUrl          String
+  googleMapsEmbedUrl     String
+  useGoogleHours         Boolean  @default(true)
+  phone                  String
+  whatsapp               String?
+  email                  String?
+  instagram              String?
+  manualOpeningHoursCa   String
+  manualOpeningHoursEs   String
+  manualOpeningHoursEn   String
+  specialNoticeCa        String?
+  specialNoticeEs        String?
+  specialNoticeEn        String?
+  onlineOrdersEnabled    Boolean  @default(false)
+  pickupEnabled          Boolean  @default(true)
+  deliveryRequestEnabled Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model SeasonalHighlight {
+  id            String    @id @default(cuid())
+  titleCa       String
+  titleEs       String
+  titleEn       String
+  descriptionCa String?
+  descriptionEs String?
+  descriptionEn String?
+  products      Product[]
+  startsAt      DateTime?
+  endsAt        DateTime?
+  isActive      Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

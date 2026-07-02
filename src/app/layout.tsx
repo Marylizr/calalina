@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
+import { CartProvider } from "@/components/cart/CartProvider";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -14,7 +15,10 @@ const nunito = Nunito_Sans({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://calalina.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Calalina",
   description:
     "Fruiteria de barri a Barcelona amb fruita fresca, verdura de temporada i sabors llatins.",
@@ -50,7 +54,9 @@ export default function RootLayout({
       lang="ca"
       className={`${fraunces.variable} ${nunito.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <CartProvider>{children}</CartProvider>
+      </body>
     </html>
   );
 }

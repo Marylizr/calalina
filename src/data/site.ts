@@ -26,71 +26,45 @@ const shared = {
     "https://www.google.com/maps/place/Fruteria+Calalina/@41.4038791,2.1605812,17z/data=!3m1!4b1!4m6!3m5!1s0x12a4a2bde0a527b9:0x1ab15ea5396060d2!8m2!3d41.4038791!4d2.1631561!16s%2Fg%2F11g6vghdwy?entry=ttu&g_ep=EgoyMDI2MDYyOC4wIKXMDSoASAFQAw%3D%3D",
   mapEmbedUrl:
     "https://maps.google.com/maps?q=Fruteria%20Calalina%2C%20Passeig%20de%20Sant%20Joan%20195%2C%20Barcelona&z=17&output=embed",
+  googlePlaceId: "",
+  useGoogleHours: true,
   mapsVideoUrl: "https://maps.app.goo.gl/DdMEr7k7oinNf57u5",
   galleryVideoImage:
     "https://res.cloudinary.com/doroh5hbv/image/upload/v1782916236/Screenshot_2026-06-30_at_15.38.43_cklhnt.png",
-  galleryImages: [
-    "g1",
-    "g2",
-    "g3",
-    "g4",
-    "g5",
-    "g6",
-    "g7",
-    "g10",
-    "g11",
-    "g12",
-    "g13",
-    "g14",
-    "g15",
-    "g16",
-    "g17",
-    "g19",
-    "g20",
-    "g22",
-    "g23",
-    "g24",
-    "g25",
-    "g26",
-    "g27",
-    "g28",
-  ].map((name) => `/images/gallery/calalina/${name}.png`),
   social: ["Instagram", "Facebook", "WhatsApp"],
-  animations: [
-    {
-      title: "Frutas",
-      image:
-        "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913987/1_ddwwiv.png",
-      video:
-        "https://res.cloudinary.com/doroh5hbv/video/upload/v1782914007/animacion1_jsyyd2.mp4",
-      label: "Frutas",
-    },
-    {
-      title: "Hortalizas",
-      image:
-        "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913998/3_u55wzm.png",
-      video:
-        "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913995/animacion3_bpkzh0.mp4",
-      label: "Hortalizas",
-    },
-    {
-      title: "Verduras",
-      image:
-        "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913990/2_abzyra.png",
-      video:
-        "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913994/animacion2_yoztpn.mp4",
-      label: "Verduras",
-    },
-    {
-      title: "Productos",
-      image:
-        "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913989/4_mid6sd.png",
-      video:
-        "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913990/animacion4_kgo4xn.mp4",
-      label: "Productos",
-    },
-  ],
 };
+
+const animationAssets = [
+  {
+    key: "fruit",
+    image: "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913987/1_ddwwiv.png",
+    video: "https://res.cloudinary.com/doroh5hbv/video/upload/v1782914007/animacion1_jsyyd2.mp4",
+  },
+  {
+    key: "vegetables",
+    image: "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913998/3_u55wzm.png",
+    video: "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913995/animacion3_bpkzh0.mp4",
+  },
+  {
+    key: "greens",
+    image: "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913990/2_abzyra.png",
+    video: "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913994/animacion2_yoztpn.mp4",
+  },
+  {
+    key: "products",
+    image: "https://res.cloudinary.com/doroh5hbv/image/upload/v1782913989/4_mid6sd.png",
+    video: "https://res.cloudinary.com/doroh5hbv/video/upload/v1782913990/animacion4_kgo4xn.mp4",
+  },
+] as const;
+
+function localizedAnimations(labels: Record<(typeof animationAssets)[number]["key"], string>) {
+  return animationAssets.map((item) => ({
+    title: labels[item.key],
+    label: labels[item.key],
+    image: item.image,
+    video: item.video,
+  }));
+}
 
 export const siteContent = {
   ca: {
@@ -107,7 +81,7 @@ export const siteContent = {
       { label: "Temporada", href: "#temporada" },
       { label: "Productes", href: "#productes" },
       { label: "Raco llati", href: "/rincon-latino" },
-      { label: "Consells", href: "/blog/como-conservar-las-verduras-frescas-mas-tiempo" },
+      { label: "Consells", href: "/consells" },
       { label: "Galeria", href: "#galeria" },
       { label: "Ubicacio", href: "#ubicacio" },
     ],
@@ -125,7 +99,12 @@ export const siteContent = {
       primaryCta: "Veure temporada",
       secondaryCta: "Com arribar",
       chips: ["Producte de proximitat", "Raco llati", "Consells de conservacio"],
-      animations: shared.animations,
+      animations: localizedAnimations({
+        fruit: "Fruita",
+        vegetables: "Hortalisses",
+        greens: "Verdures",
+        products: "Productes",
+      }),
     },
     about: {
       label: "1. Qui som",
@@ -145,7 +124,7 @@ export const siteContent = {
           title: "Fruita de temporada",
           text: "Dolca, sucosa i plena de color. Directe del camp a la nostra botiga.",
           icon: "fruit",
-          href: "/ca/blog/fruta-de-temporada-que-comemos-cada-mes",
+          href: "/ca/consells/fruita-de-temporada-que-mengem-cada-mes",
         },
         {
           title: "Verdures fresques",
@@ -162,7 +141,7 @@ export const siteContent = {
           title: "Consells de conservacio",
           text: "Idees i trucs per guardar mes temps els teus aliments preferits.",
           icon: "jar",
-          href: "/ca/blog/nevera-si-o-no-que-guardem-i-que-no",
+          href: "/ca/consells/nevera-si-o-no-que-guardem-i-que-no",
         },
       ],
     },
@@ -170,6 +149,7 @@ export const siteContent = {
       label: "3. Productes destacats",
       title: "Avui a Calalina.",
       viewAll: "Veure tots els productes",
+      empty: "Aviat afegirem productes per demanar online.",
       items: [
         {
           name: "Malta llatina",
@@ -207,45 +187,37 @@ export const siteContent = {
       label: "4. El rebost de Calalina",
       title: "Consells utils per comprar, guardar i gaudir millor.",
       readMore: "Llegir article",
-      items: [
-        {
-          title: "Nevera si o no? Que hi guardem i que no",
-          category: "Conservacio",
-          excerpt: "Una guia rapida per conservar millor la fruita sense perdre aroma ni textura.",
-          image: "/images/blog/nevera.png",
-          slug: "nevera-si-o-no-que-guardem-i-que-no",
-        },
-        {
-          title: "Fruita de temporada: que mengem cada mes",
-          category: "Temporada",
-          excerpt: "Colors, maduracio i idees senzilles per comprar amb criteri tot l'any.",
-          image: "/images/blog/temporada.png",
-          slug: "fruta-de-temporada-que-comemos-cada-mes",
-        },
-        {
-          title: "Com conservar les verdures fresques mes temps",
-          category: "Trucs",
-          excerpt: "Petits habits de mercat perque les fulles, arrels i hortalisses durin mes.",
-          image: "/images/blog/frescas.png",
-          slug: "como-conservar-las-verduras-frescas-mas-tiempo",
-        },
-        {
-          title: "Idees rapides amb productes del mercat",
-          category: "Cuina",
-          excerpt: "Receptes simples, fresques i amb molt sabor per resoldre el dia a dia.",
-          image: "/images/blog/recetas.png",
-          slug: "idees-rapides-amb-productes-del-mercat",
-        },
-      ],
+      empty: "Els articles estaran disponibles molt aviat.",
     },
     gallery: {
       label: "5. Galeria",
       title: "Colors, textures i vida de mercat.",
-      items: shared.galleryImages.map((image, index) => ({
-        title: `Galeria Calalina ${index + 1}`,
-        category: "Calalina",
-        image,
-      })),
+      empty: "La galeria estara disponible molt aviat.",
+    },
+    cart: {
+      button: "Carret",
+      title: "El teu carret",
+      pickup: "Recollida a botiga",
+      checkoutTitle: "Finalitzar comanda",
+      checkoutDescription:
+        "Recollida a botiga. El total es estimat. Confirmarem disponibilitat i import final abans de preparar la comanda.",
+      empty: "Encara no tens productes al carret.",
+      estimatedTotal: "Total estimat",
+      estimatedNote:
+        "El total es estimat. Confirmarem disponibilitat i import final abans de preparar la comanda.",
+      checkoutCta: "Finalitzar comanda",
+      name: "Nom",
+      phone: "Telefon",
+      email: "Email opcional",
+      pickupDate: "Dia/hora de recollida opcional",
+      notes: "Notes",
+      sending: "Enviant...",
+      order: "Comanda",
+      whatsapp: "Enviar resum per WhatsApp",
+      add: "Afegir al carret",
+      soldOut: "Esgotat",
+      remove: "Eliminar",
+      close: "Tancar carret",
     },
     location: {
       label: "6. Ubicacio",
@@ -267,6 +239,11 @@ export const siteContent = {
       mapLabel: "Fruteria Calalina a Google Maps",
       mapUrl: shared.mapUrl,
       mapEmbedUrl: shared.mapEmbedUrl,
+      googlePlaceId: shared.googlePlaceId,
+      useGoogleHours: shared.useGoogleHours,
+      googleHoursUpdatedText: "Horari actualitzat des de Google Maps",
+      openStatusText: "Obert ara",
+      closedStatusText: "Tancat ara",
       hours: [
         { day: "Dilluns", time: "Tancat" },
         { day: "Dimarts", time: "9:00-14:00 / 17:00-20:00" },
@@ -278,6 +255,7 @@ export const siteContent = {
       ],
       visitTitle: "Vine a veure'ns!",
       visitText: "T'esperem amb somriure, bons productes i molt bon ambient.",
+      specialNotice: "",
       cta: "Com arribar",
       social: shared.social,
     },
@@ -316,7 +294,7 @@ export const siteContent = {
       { label: "Temporada", href: "#temporada" },
       { label: "Productos", href: "#productes" },
       { label: "Rincon latino", href: "/rincon-latino" },
-      { label: "Consejos", href: "/blog/como-conservar-las-verduras-frescas-mas-tiempo" },
+      { label: "Consejos", href: "/consells" },
       { label: "Galeria", href: "#galeria" },
       { label: "Ubicacion", href: "#ubicacio" },
     ],
@@ -334,7 +312,12 @@ export const siteContent = {
       primaryCta: "Ver temporada",
       secondaryCta: "Como llegar",
       chips: ["Producto de proximidad", "Rincon latino", "Consejos de conservacion"],
-      animations: shared.animations,
+      animations: localizedAnimations({
+        fruit: "Frutas",
+        vegetables: "Hortalizas",
+        greens: "Verduras",
+        products: "Productos",
+      }),
     },
     about: {
       label: "1. Quienes somos",
@@ -354,7 +337,7 @@ export const siteContent = {
           title: "Fruta de temporada",
           text: "Dulce, jugosa y llena de color. Directa del campo a nuestra tienda.",
           icon: "fruit",
-          href: "/es/blog/fruta-de-temporada-que-comemos-cada-mes",
+          href: "/es/consells/fruita-de-temporada-que-mengem-cada-mes",
         },
         {
           title: "Verduras frescas",
@@ -371,7 +354,7 @@ export const siteContent = {
           title: "Consejos de conservacion",
           text: "Ideas y trucos para guardar mas tiempo tus alimentos preferidos.",
           icon: "jar",
-          href: "/es/blog/nevera-si-o-no-que-guardem-i-que-no",
+          href: "/es/consells/nevera-si-o-no-que-guardem-i-que-no",
         },
       ],
     },
@@ -379,6 +362,7 @@ export const siteContent = {
       label: "3. Productos destacados",
       title: "Hoy en Calalina.",
       viewAll: "Ver todos los productos",
+      empty: "Pronto agregaremos productos para pedir online.",
       items: [
         {
           name: "Malta",
@@ -416,45 +400,37 @@ export const siteContent = {
       label: "4. La despensa de Calalina",
       title: "Consejos utiles para comprar, guardar y disfrutar mejor.",
       readMore: "Leer articulo",
-      items: [
-        {
-          title: "Nevera si o no? Que guardamos y que no",
-          category: "Conservacion",
-          excerpt: "Una guia rapida para conservar mejor la fruta sin perder aroma ni textura.",
-          image: "/images/blog/nevera.png",
-          slug: "nevera-si-o-no-que-guardem-i-que-no",
-        },
-        {
-          title: "Fruta de temporada: que comemos cada mes",
-          category: "Temporada",
-          excerpt: "Colores, maduracion e ideas sencillas para comprar con criterio todo el ano.",
-          image: "/images/blog/temporada.png",
-          slug: "fruta-de-temporada-que-comemos-cada-mes",
-        },
-        {
-          title: "Como conservar las verduras frescas mas tiempo",
-          category: "Trucos",
-          excerpt: "Pequenos habitos de mercado para que hojas, raices y hortalizas duren mas.",
-          image: "/images/blog/frescas.png",
-          slug: "como-conservar-las-verduras-frescas-mas-tiempo",
-        },
-        {
-          title: "Ideas rapidas con productos del mercado",
-          category: "Cocina",
-          excerpt: "Recetas simples, frescas y con mucho sabor para resolver el dia a dia.",
-          image: "/images/blog/recetas.png",
-          slug: "idees-rapides-amb-productes-del-mercat",
-        },
-      ],
+      empty: "Los articulos estaran disponibles muy pronto.",
     },
     gallery: {
       label: "5. Galeria",
       title: "Colores, texturas y vida de mercado.",
-      items: shared.galleryImages.map((image, index) => ({
-        title: `Galeria Calalina ${index + 1}`,
-        category: "Calalina",
-        image,
-      })),
+      empty: "La galeria estara disponible muy pronto.",
+    },
+    cart: {
+      button: "Carrito",
+      title: "Tu carrito",
+      pickup: "Recogida en tienda",
+      checkoutTitle: "Finalizar pedido",
+      checkoutDescription:
+        "Recogida en tienda. El total es estimado. Confirmaremos disponibilidad e importe final antes de preparar el pedido.",
+      empty: "Todavia no tienes productos en el carrito.",
+      estimatedTotal: "Total estimado",
+      estimatedNote:
+        "El total es estimado. Confirmaremos disponibilidad e importe final antes de preparar el pedido.",
+      checkoutCta: "Finalizar pedido",
+      name: "Nombre",
+      phone: "Telefono",
+      email: "Email opcional",
+      pickupDate: "Dia/hora de recogida opcional",
+      notes: "Notas",
+      sending: "Enviando...",
+      order: "Pedido",
+      whatsapp: "Enviar resumen por WhatsApp",
+      add: "Añadir al carrito",
+      soldOut: "Agotado",
+      remove: "Eliminar",
+      close: "Cerrar carrito",
     },
     location: {
       label: "6. Ubicacion",
@@ -476,6 +452,11 @@ export const siteContent = {
       mapLabel: "Fruteria Calalina en Google Maps",
       mapUrl: shared.mapUrl,
       mapEmbedUrl: shared.mapEmbedUrl,
+      googlePlaceId: shared.googlePlaceId,
+      useGoogleHours: shared.useGoogleHours,
+      googleHoursUpdatedText: "Horario actualizado desde Google Maps",
+      openStatusText: "Abierto ahora",
+      closedStatusText: "Cerrado ahora",
       hours: [
         { day: "lunes", time: "Cerrado" },
         { day: "martes", time: "9:00-14:00 / 17:00-20:00" },
@@ -487,6 +468,7 @@ export const siteContent = {
       ],
       visitTitle: "Ven a vernos!",
       visitText: "Te esperamos con sonrisa, buenos productos y muy buen ambiente.",
+      specialNotice: "",
       cta: "Como llegar",
       social: shared.social,
     },
@@ -525,7 +507,7 @@ export const siteContent = {
       { label: "Seasonal", href: "#temporada" },
       { label: "Products", href: "#productes" },
       { label: "Latin corner", href: "/rincon-latino" },
-      { label: "Tips", href: "/blog/como-conservar-las-verduras-frescas-mas-tiempo" },
+      { label: "Tips", href: "/consells" },
       { label: "Gallery", href: "#galeria" },
       { label: "Location", href: "#ubicacio" },
     ],
@@ -543,7 +525,12 @@ export const siteContent = {
       primaryCta: "See seasonal picks",
       secondaryCta: "How to get here",
       chips: ["Local produce", "Latin corner", "Storage tips"],
-      animations: shared.animations,
+      animations: localizedAnimations({
+        fruit: "Fruit",
+        vegetables: "Vegetables",
+        greens: "Greens",
+        products: "Products",
+      }),
     },
     about: {
       label: "1. About us",
@@ -563,7 +550,7 @@ export const siteContent = {
           title: "Seasonal fruit",
           text: "Sweet, juicy and full of colour. Straight from the field to our shop.",
           icon: "fruit",
-          href: "/en/blog/fruta-de-temporada-que-comemos-cada-mes",
+          href: "/en/consells/fruita-de-temporada-que-mengem-cada-mes",
         },
         {
           title: "Fresh vegetables",
@@ -580,7 +567,7 @@ export const siteContent = {
           title: "Storage tips",
           text: "Ideas and tricks to keep your favourite foods fresh for longer.",
           icon: "jar",
-          href: "/en/blog/nevera-si-o-no-que-guardem-i-que-no",
+          href: "/en/consells/nevera-si-o-no-que-guardem-i-que-no",
         },
       ],
     },
@@ -588,6 +575,7 @@ export const siteContent = {
       label: "3. Featured products",
       title: "Today at Calalina.",
       viewAll: "See all products",
+      empty: "We will add products for online requests soon.",
       items: [
         {
           name: "Malt drink",
@@ -625,45 +613,37 @@ export const siteContent = {
       label: "4. Calalina pantry",
       title: "Useful tips to shop, store and enjoy better.",
       readMore: "Read article",
-      items: [
-        {
-          title: "Fridge or not? What to store and what to keep out",
-          category: "Storage",
-          excerpt: "A quick guide to keeping fruit better without losing aroma or texture.",
-          image: "/images/blog/nevera.png",
-          slug: "nevera-si-o-no-que-guardem-i-que-no",
-        },
-        {
-          title: "Seasonal fruit: what to eat each month",
-          category: "Seasonal",
-          excerpt: "Colours, ripeness and simple ideas for shopping wisely all year.",
-          image: "/images/blog/temporada.png",
-          slug: "fruta-de-temporada-que-comemos-cada-mes",
-        },
-        {
-          title: "How to keep vegetables fresh for longer",
-          category: "Tips",
-          excerpt: "Small market habits so leaves, roots and vegetables last longer.",
-          image: "/images/blog/frescas.png",
-          slug: "como-conservar-las-verduras-frescas-mas-tiempo",
-        },
-        {
-          title: "Quick ideas with market produce",
-          category: "Cooking",
-          excerpt: "Simple, fresh and flavourful recipes for everyday meals.",
-          image: "/images/blog/recetas.png",
-          slug: "idees-rapides-amb-productes-del-mercat",
-        },
-      ],
+      empty: "Articles will be available very soon.",
     },
     gallery: {
       label: "5. Gallery",
       title: "Colours, textures and market life.",
-      items: shared.galleryImages.map((image, index) => ({
-        title: `Calalina gallery ${index + 1}`,
-        category: "Calalina",
-        image,
-      })),
+      empty: "The gallery will be available very soon.",
+    },
+    cart: {
+      button: "Cart",
+      title: "Your cart",
+      pickup: "In-store pickup",
+      checkoutTitle: "Finish order",
+      checkoutDescription:
+        "In-store pickup. The total is estimated. We will confirm availability and final amount before preparing your order.",
+      empty: "You do not have products in your cart yet.",
+      estimatedTotal: "Estimated total",
+      estimatedNote:
+        "The total is estimated. We will confirm availability and final amount before preparing your order.",
+      checkoutCta: "Finish order",
+      name: "Name",
+      phone: "Phone",
+      email: "Optional email",
+      pickupDate: "Optional pickup day/time",
+      notes: "Notes",
+      sending: "Sending...",
+      order: "Order",
+      whatsapp: "Send summary by WhatsApp",
+      add: "Add to cart",
+      soldOut: "Sold out",
+      remove: "Remove",
+      close: "Close cart",
     },
     location: {
       label: "6. Location",
@@ -685,6 +665,11 @@ export const siteContent = {
       mapLabel: "Fruteria Calalina on Google Maps",
       mapUrl: shared.mapUrl,
       mapEmbedUrl: shared.mapEmbedUrl,
+      googlePlaceId: shared.googlePlaceId,
+      useGoogleHours: shared.useGoogleHours,
+      googleHoursUpdatedText: "Hours updated from Google Maps",
+      openStatusText: "Open now",
+      closedStatusText: "Closed now",
       hours: [
         { day: "Monday", time: "Closed" },
         { day: "Tuesday", time: "9:00-14:00 / 17:00-20:00" },
@@ -696,6 +681,7 @@ export const siteContent = {
       ],
       visitTitle: "Come visit us!",
       visitText: "We are waiting with a smile, good produce and a warm atmosphere.",
+      specialNotice: "",
       cta: "How to get here",
       social: shared.social,
     },

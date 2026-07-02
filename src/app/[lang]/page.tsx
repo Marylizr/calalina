@@ -15,6 +15,8 @@ type LocalizedPageProps = {
   params: Promise<{ lang: string }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
@@ -94,11 +96,11 @@ export default async function LocalizedHome({ params }: LocalizedPageProps) {
         <HeroSection content={content.hero} />
         <AboutSection content={content.about} />
         <OfferSection content={content.offer} />
-        <FeaturedProductsSection content={content.products} />
+        <FeaturedProductsSection content={content.products} locale={locale} />
         <div id="raco-llati" className="scroll-mt-24" aria-hidden="true" />
         <BlogTipsSection content={content.blog} locale={locale} />
-        <GallerySection content={content.gallery} />
-        <LocationSection content={content.location} />
+        <GallerySection content={content.gallery} locale={locale} />
+        <LocationSection locale={locale} content={content.location} />
       </main>
       <Footer locale={locale} content={content.footer} />
       <script
