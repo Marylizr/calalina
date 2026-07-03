@@ -4,7 +4,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { ProductGrid } from "@/components/products/ProductGrid";
 import { getSiteContent, isLocale, locales, type Locale } from "@/data/site";
+import { getCatalogPath, getProductCollection } from "@/lib/products";
+import { getShopWhatsAppUrl } from "@/lib/store-settings";
 
 type RinconLatinoPageProps = {
   params: Promise<{ lang: string }>;
@@ -31,7 +34,12 @@ const pageContent: Record<
     productsTitle: string;
     products: string[];
     cta: string;
+    whatsappCta: string;
     galleryTitle: string;
+    productsGridTitle: string;
+    productsGridText: string;
+    empty: string;
+    clearFilters: string;
     back: string;
     imageAlt: string;
   }
@@ -54,7 +62,12 @@ const pageContent: Record<
       "Ingredients per preparar plats que fan olor de família.",
     ],
     cta: "Vine a comprar els teus productes",
+    whatsappCta: "Consultar per WhatsApp",
     galleryTitle: "Sabors que abracen",
+    productsGridTitle: "Productes llatins disponibles",
+    productsGridText: "La disponibilitat pot variar segons arribades i temporada.",
+    empty: "Aviat destacarem productes del raco llati.",
+    clearFilters: "Veure cataleg",
     back: "Tornar a Calalina",
     imageAlt: "Productes del racó llatí de Calalina",
   },
@@ -76,7 +89,12 @@ const pageContent: Record<
       "Ingredientes para preparar platos que huelen a familia.",
     ],
     cta: "Ven a comprar tus productos",
+    whatsappCta: "Consultar por WhatsApp",
     galleryTitle: "Sabores que abrazan",
+    productsGridTitle: "Productos latinos disponibles",
+    productsGridText: "La disponibilidad puede variar según llegadas y temporada.",
+    empty: "Pronto destacaremos productos del rincon latino.",
+    clearFilters: "Ver catalogo",
     back: "Volver a Calalina",
     imageAlt: "Productos del rincón latino de Calalina",
   },
@@ -98,7 +116,12 @@ const pageContent: Record<
       "Ingredients for dishes that smell like family.",
     ],
     cta: "Come shop your favourites",
+    whatsappCta: "Ask on WhatsApp",
     galleryTitle: "Flavours that feel close",
+    productsGridTitle: "Available Latin products",
+    productsGridText: "Availability may vary depending on deliveries and season.",
+    empty: "Latin corner products will be featured soon.",
+    clearFilters: "View catalog",
     back: "Back to Calalina",
     imageAlt: "Products from Calalina's Latin corner",
   },
@@ -150,6 +173,20 @@ export default async function RinconLatinoPage({ params }: RinconLatinoPageProps
   const locale: Locale = lang;
   const siteContent = getSiteContent(locale);
   const content = pageContent[locale];
+  const [latinProducts, whatsappUrl] = await Promise.all([
+    getProductCollection(locale, "latin"),
+    getShopWhatsAppUrl(locale),
+  ]);
+  const catalogPath = getCatalogPath(locale);
+  const cardCopy = {
+    featured: locale === "es" ? "Destacado" : locale === "en" ? "Featured" : "Destacat",
+    seasonal: locale === "es" ? "Temporada" : locale === "en" ? "Seasonal" : "Temporada",
+    latin: locale === "es" ? "Rincon latino" : locale === "en" ? "Latin" : "Raco llati",
+    online: "Online",
+    askInStore: locale === "es" ? "Tienda" : locale === "en" ? "In store" : "Botiga",
+    available: locale === "es" ? "Disponible" : locale === "en" ? "Available" : "Disponible",
+    outOfStock: locale === "es" ? "Agotado" : locale === "en" ? "Out of stock" : "Esgotat",
+  };
 
   return (
     <>
@@ -178,6 +215,16 @@ export default async function RinconLatinoPage({ params }: RinconLatinoPageProps
               >
                 {content.cta} →
               </Link>
+              {whatsappUrl ? (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/82 px-6 text-sm font-black text-[var(--color-deep-green)] shadow-sm transition hover:bg-white"
+                >
+                  {content.whatsappCta}
+                </a>
+              ) : null}
               <Link
                 href={`/${locale}#temporada`}
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/82 px-6 text-sm font-black text-[var(--color-deep-green)] shadow-sm transition hover:bg-white"
@@ -204,6 +251,27 @@ export default async function RinconLatinoPage({ params }: RinconLatinoPageProps
               </p>
             </div>
           </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <h2 className="font-serif text-4xl font-black leading-tight text-[var(--color-dark-ink)]">
+              {content.productsGridTitle}
+            </h2>
+            <p className="mt-4 text-base font-bold leading-7 text-[var(--color-muted-text)]">
+              {content.productsGridText}
+            </p>
+          </div>
+          <ProductGrid
+            products={latinProducts}
+            locale={locale}
+            catalogPath={catalogPath}
+            copy={{
+              empty: content.empty,
+              clearFilters: content.clearFilters,
+              card: cardCopy,
+            }}
+          />
         </section>
 
         <section className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">

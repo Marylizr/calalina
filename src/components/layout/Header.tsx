@@ -25,10 +25,10 @@ export function Header({ locale, navItems, content }: HeaderProps) {
 
   return (
     <header className="wood-header sticky top-0 z-50 border-b border-[var(--color-wood-brown)]/10 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-4 py-4 sm:px-6 lg:px-8">
         <Link
           href={`/${locale}#inici`}
-          className="flex items-center gap-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
+          className="flex shrink-0 items-center gap-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
           aria-label={content.homeAriaLabel}
         >
           <span className="relative grid h-12 w-12 place-items-center overflow-hidden">
@@ -51,19 +51,19 @@ export function Header({ locale, navItems, content }: HeaderProps) {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-5 lg:flex" aria-label={content.navAriaLabel}>
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-6 pl-3 lg:flex" aria-label={content.navAriaLabel}>
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={`/${locale}${item.href}`}
-              className="rounded-full px-2 py-2 text-sm font-bold text-[var(--color-dark-ink)] transition hover:text-[var(--color-calalina-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
+              className="inline-flex min-h-10 items-center rounded-full px-2 py-2 text-sm font-bold leading-none text-[var(--color-dark-ink)] transition hover:text-[var(--color-calalina-red)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
           <CartDrawer locale={locale} />
           <LanguageSwitcher locale={locale} />
         </div>

@@ -1,3 +1,4 @@
+import type { Decimal } from "@prisma/client/runtime/library";
 import type { ProductUnit, StockStatus } from "@prisma/client";
 import { prisma, hasDatabaseUrl } from "@/lib/prisma";
 import type { Locale } from "@/data/site";
@@ -38,6 +39,31 @@ export type ProductCatalogData = {
   categories: PublicCategory[];
 };
 
+export type ProductCollectionKind = "seasonal" | "vegetables" | "latin";
+
+type ProductForPublic = {
+  id: string;
+  nameCa: string;
+  nameEs: string;
+  nameEn: string;
+  shortDescriptionCa?: string | null;
+  shortDescriptionEs?: string | null;
+  shortDescriptionEn?: string | null;
+  descriptionCa?: string | null;
+  descriptionEs?: string | null;
+  descriptionEn?: string | null;
+  price: Decimal;
+  unit: ProductUnit;
+  images: string[];
+  isActive: boolean;
+  availableOnline: boolean;
+  stockStatus: StockStatus;
+  isFeatured: boolean;
+  isSeasonal: boolean;
+  isLatin: boolean;
+  category?: { nameCa: string; nameEs: string; nameEn: string; slug: string } | null;
+};
+
 export function localizedName(locale: Locale, product: { nameCa: string; nameEs: string; nameEn: string }) {
   if (locale === "es") return product.nameEs || product.nameCa;
   if (locale === "en") return product.nameEn || product.nameCa;
@@ -64,6 +90,29 @@ function localizedCategory(locale: Locale, category: { nameCa: string; nameEs: s
   if (locale === "es") return category.nameEs || category.nameCa;
   if (locale === "en") return category.nameEn || category.nameCa;
   return category.nameCa;
+}
+
+function toPublicProduct(locale: Locale, product: ProductForPublic): PublicProduct {
+  return {
+    id: product.id,
+    name: localizedName(locale, product),
+    description: localizedDescription(locale, product),
+    price: Number(product.price),
+    unit: product.unit,
+    image: product.images[0] || "/images/products/alvocat.svg",
+    isActive: product.isActive,
+    availableOnline: product.availableOnline,
+    stockStatus: product.stockStatus,
+    isFeatured: product.isFeatured,
+    isSeasonal: product.isSeasonal,
+    isLatin: product.isLatin,
+    category: product.category
+      ? {
+          name: localizedCategory(locale, product.category),
+          slug: product.category.slug,
+        }
+      : null,
+  };
 }
 
 function normalizeSearch(value?: string) {
@@ -93,21 +142,42 @@ export async function getFeaturedProducts(locale: Locale) {
       take: 12,
     });
 
-    return products.map((product) => ({
-      id: product.id,
-      name: localizedName(locale, product),
-      description: localizedDescription(locale, product),
-      price: Number(product.price),
-      unit: product.unit,
-      image: product.images[0] || "/images/products/alvocat.svg",
-      isActive: product.isActive,
-      availableOnline: product.availableOnline,
-      stockStatus: product.stockStatus,
-      isFeatured: product.isFeatured,
-      isSeasonal: product.isSeasonal,
-      isLatin: product.isLatin,
-      category: null,
-    }));
+    return products.map((product) => toPublicProduct(locale, { ...product, category: null }));
+  } catch {
+    return [];
+  }
+}
+
+export async function getProductCollection(locale: Locale, kind: ProductCollectionKind) {
+  if (!hasDatabaseUrl()) return [];
+
+  const vegetableCategories = ["verdura", "hortalisses"];
+  const latinCategories = ["productes-llatins", "begudes", "dolcos-i-snacks", "rebost"];
+
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        isActive: true,
+        ...(kind === "seasonal"
+          ? { isSeasonal: true }
+          : kind === "vegetables"
+            ? { category: { slug: { in: vegetableCategories } } }
+            : {
+                OR: [
+                  { isLatin: true },
+                  { category: { slug: { in: latinCategories } } },
+                ],
+              }),
+      },
+      include: { category: true },
+      orderBy: [
+        { isFeatured: "desc" },
+        { isSeasonal: "desc" },
+        { updatedAt: "desc" },
+      ],
+    });
+
+    return products.map((product) => toPublicProduct(locale, product));
   } catch {
     return [];
   }
@@ -151,27 +221,11 @@ export async function getProductCatalog(
     }));
 
     const mappedProducts = products.map((product) => {
-      const category = product.category
-        ? {
-            name: localizedCategory(locale, product.category),
-            slug: product.category.slug,
-          }
-        : null;
+      const publicProduct = toPublicProduct(locale, product);
+      const category = publicProduct.category;
 
       return {
-        id: product.id,
-        name: localizedName(locale, product),
-        description: localizedDescription(locale, product),
-        price: Number(product.price),
-        unit: product.unit,
-        image: product.images[0] || "/images/products/alvocat.svg",
-        isActive: product.isActive,
-        availableOnline: product.availableOnline,
-        stockStatus: product.stockStatus,
-        isFeatured: product.isFeatured,
-        isSeasonal: product.isSeasonal,
-        isLatin: product.isLatin,
-        category,
+        ...publicProduct,
         searchText: normalizeSearch(
           [
             product.nameCa,

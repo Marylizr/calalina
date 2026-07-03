@@ -71,11 +71,26 @@ export function CartDrawer({ locale }: { locale: Locale }) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="relative rounded-full bg-white/80 px-4 py-2 text-sm font-black text-[var(--color-dark-ink)] shadow-sm"
+        className="relative grid h-12 w-12 place-items-center rounded-full bg-white/84 text-[var(--color-dark-ink)] shadow-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
+        aria-label={copy.button}
       >
-        {copy.button}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="h-6 w-6"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2.4"
+        >
+          <path d="M6.2 6.2h15l-1.6 8.1a2 2 0 0 1-2 1.6H9.3a2 2 0 0 1-2-1.6L5.8 3.8H3" />
+          <path d="M9.4 20.2h.1" />
+          <path d="M17.4 20.2h.1" />
+        </svg>
+        <span className="sr-only">{copy.button}</span>
         {count ? (
-          <span className="ml-2 rounded-full bg-[var(--color-calalina-red)] px-2 py-0.5 text-xs text-white">{count}</span>
+          <span className="absolute -right-1 -top-1 grid min-h-6 min-w-6 place-items-center rounded-full bg-[var(--color-calalina-red)] px-1.5 text-xs font-black leading-none text-white shadow-sm">{count}</span>
         ) : null}
       </button>
       {drawer ? createPortal(drawer, document.body) : null}
