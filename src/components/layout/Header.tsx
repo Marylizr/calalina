@@ -31,7 +31,7 @@ export function Header({ locale, navItems, content }: HeaderProps) {
           className="flex items-center gap-3 rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-mandarin-orange)]"
           aria-label={content.homeAriaLabel}
         >
-          <span className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-white/90 shadow-[0_10px_20px_rgba(117,64,28,0.18)] ring-1 ring-[var(--color-wood-brown)]/15">
+          <span className="relative grid h-12 w-12 place-items-center overflow-hidden">
             <Image
               src={LOGO_SRC}
               alt=""
@@ -41,12 +41,12 @@ export function Header({ locale, navItems, content }: HeaderProps) {
               className="h-10 w-auto object-contain"
             />
           </span>
-          <span>
-            <span className="block font-serif text-2xl font-black leading-none text-[var(--color-dark-ink)]">
-              Calalina
-            </span>
-            <span className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--color-muted-text)]">
+          <span className="grid gap-0.5">
+            <span className="text-[0.68rem] font-black uppercase leading-none tracking-[0.18em] text-[var(--color-muted-text)]">
               {content.brandSubtitle}
+            </span>
+            <span className="block font-serif text-[1.7rem] font-black leading-none text-[var(--color-dark-ink)]">
+              Calalina
             </span>
           </span>
         </Link>

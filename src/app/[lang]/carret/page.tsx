@@ -4,6 +4,7 @@ import { CheckoutForm } from "@/components/cart/CheckoutForm";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getSiteContent, isLocale, type Locale } from "@/data/site";
+import { getPublicFulfillmentSettings } from "@/lib/fulfillment-settings";
 
 type CartPageProps = {
   params: Promise<{ lang: string }>;
@@ -37,6 +38,7 @@ export default async function CartPage({ params }: CartPageProps) {
 
   const locale: Locale = lang;
   const content = getSiteContent(locale);
+  const fulfillmentSettings = await getPublicFulfillmentSettings(locale);
 
   return (
     <>
@@ -51,7 +53,7 @@ export default async function CartPage({ params }: CartPageProps) {
               {content.cart.title}
             </h1>
           </div>
-          <CheckoutForm locale={locale} />
+          <CheckoutForm locale={locale} fulfillmentSettings={fulfillmentSettings} />
         </section>
       </main>
       <Footer locale={locale} content={content.footer} />

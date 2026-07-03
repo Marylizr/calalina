@@ -1,7 +1,7 @@
 import type { Locale } from "@/data/site";
 import { FeaturedProductsCarousel } from "@/components/sections/FeaturedProductsCarousel";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { getFeaturedProducts } from "@/lib/products";
+import { getCatalogPath, getFeaturedProducts } from "@/lib/products";
 
 type FeaturedProductsSectionProps = {
   content: {
@@ -15,6 +15,7 @@ type FeaturedProductsSectionProps = {
 
 export async function FeaturedProductsSection({ content, locale }: FeaturedProductsSectionProps) {
   const products = await getFeaturedProducts(locale);
+  const catalogPath = getCatalogPath(locale);
 
   return (
     <section id="productes" className="brick-section-soft py-20 sm:py-24">
@@ -27,7 +28,7 @@ export async function FeaturedProductsSection({ content, locale }: FeaturedProdu
             </h2>
           </div>
           <a
-            href="#productes"
+            href={catalogPath}
             className="font-black text-[var(--color-calalina-red)] hover:text-[var(--color-tomato-red)]"
           >
             {content.viewAll} →

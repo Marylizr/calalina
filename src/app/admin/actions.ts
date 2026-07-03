@@ -56,6 +56,81 @@ function formBoolean(formData: FormData, name: string) {
   return value === "on" || value === "true" || value === "1";
 }
 
+function constantTimeEqual(a: string, b: string) {
+  const encoder = new TextEncoder();
+  const left = encoder.encode(a);
+  const right = encoder.encode(b);
+  const length = Math.max(left.length, right.length);
+  let mismatch = left.length ^ right.length;
+
+  for (let index = 0; index < length; index += 1) {
+    mismatch |= (left[index] ?? 0) ^ (right[index] ?? 0);
+  }
+
+  return mismatch === 0;
+}
+
+function isSafeAdminRedirect(value: string) {
+  return value.startsWith("/admin") && !value.startsWith("//") && !value.includes("://");
+}
+
+function isSafeImageUrl(value?: string | null) {
+  if (!value) return true;
+  if (value.startsWith("/uploads/admin/") || value.startsWith("/images/")) return true;
+
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "res.cloudinary.com" &&
+      url.pathname.startsWith("/doroh5hbv/image/upload/")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isSafeLink(value?: string | null) {
+  if (!value) return true;
+  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  if (value.startsWith("#")) return true;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isGoogleMapsUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["www.google.com", "google.com", "maps.google.com"].includes(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isGoogleMapsEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["www.google.com", "maps.google.com"].includes(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function formEntries(formData: FormData) {
+  return Object.fromEntries(formData);
+}
+
 function databaseFail(error: unknown) {
   const message = error instanceof Error ? error.message : "";
 
@@ -69,65 +144,65 @@ function databaseFail(error: unknown) {
 const productSchema = z.object({
   id: z.string().optional(),
   mode: z.enum(["create", "edit"]).default("create"),
-  nameEs: z.string().trim().min(1, "El nombre en español es obligatorio."),
-  nameCa: z.string().trim().optional(),
-  nameEn: z.string().trim().optional(),
-  categoryId: z.string().optional(),
-  category: z.string().optional(),
+  nameEs: z.string().trim().min(1, "El nombre en español es obligatorio.").max(120),
+  nameCa: z.string().trim().max(120).optional(),
+  nameEn: z.string().trim().max(120).optional(),
+  categoryId: z.string().trim().max(120).optional(),
+  category: z.string().trim().max(120).optional(),
   price: z.coerce.number().positive("Añade un precio válido."),
   unit: z.enum(["kg", "unit", "tray", "pack", "box", "bottle"]).default("kg"),
-  shortDescriptionEs: z.string().trim().optional(),
-  imageUrl: z.string().trim().optional(),
+  shortDescriptionEs: z.string().trim().max(500).optional(),
+  imageUrl: z.string().trim().max(500).optional().refine(isSafeImageUrl, "La imagen debe ser local o de Cloudinary."),
 });
 
 const categorySchema = z.object({
   id: z.string().optional(),
-  nameEs: z.string().trim().min(1, "El nombre es obligatorio."),
-  nameCa: z.string().trim().optional(),
-  nameEn: z.string().trim().optional(),
+  nameEs: z.string().trim().min(1, "El nombre es obligatorio.").max(120),
+  nameCa: z.string().trim().max(120).optional(),
+  nameEn: z.string().trim().max(120).optional(),
 });
 
 const orderStatusSchema = z.object({
   id: z.string().min(1),
   status: z.enum(["new", "confirmed", "preparing", "readyForPickup", "delivered", "cancelled"]),
-  internalNote: z.string().optional(),
+  internalNote: z.string().trim().max(800).optional(),
 });
 
 const blogSchema = z.object({
   id: z.string().optional(),
   mode: z.enum(["create", "edit"]).default("create"),
-  slug: z.string().trim().optional(),
-  titleEs: z.string().trim().min(1, "El título en español es obligatorio."),
-  titleCa: z.string().trim().optional(),
-  titleEn: z.string().trim().optional(),
-  excerptEs: z.string().trim().min(1, "El extracto es obligatorio."),
-  excerptCa: z.string().trim().optional(),
-  excerptEn: z.string().trim().optional(),
-  contentEs: z.string().trim().min(1, "El contenido es obligatorio."),
-  contentCa: z.string().trim().optional(),
-  contentEn: z.string().trim().optional(),
-  category: z.string().trim().min(1, "La categoría es obligatoria."),
-  coverImage: z.string().trim().optional(),
+  slug: z.string().trim().max(120).optional(),
+  titleEs: z.string().trim().min(1, "El título en español es obligatorio.").max(180),
+  titleCa: z.string().trim().max(180).optional(),
+  titleEn: z.string().trim().max(180).optional(),
+  excerptEs: z.string().trim().min(1, "El extracto es obligatorio.").max(500),
+  excerptCa: z.string().trim().max(500).optional(),
+  excerptEn: z.string().trim().max(500).optional(),
+  contentEs: z.string().trim().min(1, "El contenido es obligatorio.").max(50000),
+  contentCa: z.string().trim().max(50000).optional(),
+  contentEn: z.string().trim().max(50000).optional(),
+  category: z.string().trim().min(1, "La categoría es obligatoria.").max(120),
+  coverImage: z.string().trim().max(500).optional().refine(isSafeImageUrl, "La imagen debe ser local o de Cloudinary."),
   status: z.enum(["draft", "published"]).default("draft"),
   publishedAt: z.string().trim().optional(),
-  seoTitleEs: z.string().trim().optional(),
-  seoTitleCa: z.string().trim().optional(),
-  seoTitleEn: z.string().trim().optional(),
-  seoDescriptionEs: z.string().trim().optional(),
-  seoDescriptionCa: z.string().trim().optional(),
-  seoDescriptionEn: z.string().trim().optional(),
+  seoTitleEs: z.string().trim().max(180).optional(),
+  seoTitleCa: z.string().trim().max(180).optional(),
+  seoTitleEn: z.string().trim().max(180).optional(),
+  seoDescriptionEs: z.string().trim().max(300).optional(),
+  seoDescriptionCa: z.string().trim().max(300).optional(),
+  seoDescriptionEn: z.string().trim().max(300).optional(),
 });
 
 const gallerySchema = z.object({
   id: z.string().optional(),
-  image: z.string().trim().min(1, "La imagen es obligatoria."),
-  titleEs: z.string().trim().optional(),
-  titleCa: z.string().trim().optional(),
-  titleEn: z.string().trim().optional(),
-  altEs: z.string().trim().optional(),
-  altCa: z.string().trim().optional(),
-  altEn: z.string().trim().optional(),
-  category: z.string().trim().optional(),
+  image: z.string().trim().min(1, "La imagen es obligatoria.").max(500).refine(isSafeImageUrl, "La imagen debe ser local o de Cloudinary."),
+  titleEs: z.string().trim().max(160).optional(),
+  titleCa: z.string().trim().max(160).optional(),
+  titleEn: z.string().trim().max(160).optional(),
+  altEs: z.string().trim().max(220).optional(),
+  altCa: z.string().trim().max(220).optional(),
+  altEn: z.string().trim().max(220).optional(),
+  category: z.string().trim().max(120).optional(),
   isFeatured: z.coerce.boolean().default(false),
   isVisible: z.coerce.boolean().default(false),
   showOnHome: z.coerce.boolean().default(false),
@@ -137,35 +212,49 @@ const gallerySchema = z.object({
 
 const bannerSchema = z.object({
   id: z.string().optional(),
-  titleEs: z.string().trim().min(1, "El título es obligatorio."),
-  titleCa: z.string().trim().optional(),
-  titleEn: z.string().trim().optional(),
-  descriptionEs: z.string().trim().optional(),
-  descriptionCa: z.string().trim().optional(),
-  descriptionEn: z.string().trim().optional(),
-  image: z.string().trim().optional(),
-  ctaLabelEs: z.string().trim().optional(),
-  ctaHref: z.string().trim().optional(),
+  titleEs: z.string().trim().min(1, "El título es obligatorio.").max(180),
+  titleCa: z.string().trim().max(180).optional(),
+  titleEn: z.string().trim().max(180).optional(),
+  descriptionEs: z.string().trim().max(500).optional(),
+  descriptionCa: z.string().trim().max(500).optional(),
+  descriptionEn: z.string().trim().max(500).optional(),
+  image: z.string().trim().max(500).optional().refine(isSafeImageUrl, "La imagen debe ser local o de Cloudinary."),
+  ctaLabelEs: z.string().trim().max(80).optional(),
+  ctaHref: z.string().trim().max(500).optional().refine(isSafeLink, "El enlace debe ser relativo o HTTPS."),
   placement: z.enum(["homeHero", "topBar", "seasonal", "latinCorner"]).default("homeHero"),
   isActive: z.coerce.boolean().default(false),
 });
 
+const optionalMoneySchema = z.preprocess(
+  (value) => (value === "" || value === null || value === undefined ? null : value),
+  z.coerce.number().min(0).max(500).nullable(),
+);
+
 const settingsSchema = z.object({
-  businessName: z.string().trim().min(1, "El nombre comercial es obligatorio."),
-  address: z.string().trim().min(1, "La dirección es obligatoria."),
-  phone: z.string().trim().min(1, "El teléfono es obligatorio."),
-  whatsapp: z.string().trim().optional(),
+  businessName: z.string().trim().min(1, "El nombre comercial es obligatorio.").max(160),
+  address: z.string().trim().min(1, "La dirección es obligatoria.").max(300),
+  phone: z.string().trim().min(1, "El teléfono es obligatorio.").max(40),
+  whatsapp: z.string().trim().max(40).optional(),
   email: z.string().trim().email("Email inválido").optional().or(z.literal("")),
-  googlePlaceId: z.string().trim().optional(),
-  googleMapsUrl: z.string().trim().min(1, "La URL de Google Maps es obligatoria."),
-  googleMapsEmbedUrl: z.string().trim().min(1, "La URL embed de Google Maps es obligatoria."),
+  googlePlaceId: z.string().trim().max(160).optional(),
+  googleMapsUrl: z.string().trim().min(1, "La URL de Google Maps es obligatoria.").max(1000).refine(isGoogleMapsUrl, "Usa una URL válida de Google Maps."),
+  googleMapsEmbedUrl: z.string().trim().min(1, "La URL embed de Google Maps es obligatoria.").max(1000).refine(isGoogleMapsEmbedUrl, "Usa una URL embed válida de Google Maps."),
   useGoogleHours: z.coerce.boolean().default(false),
-  manualOpeningHoursCa: z.string().trim().min(1),
-  manualOpeningHoursEs: z.string().trim().min(1),
-  manualOpeningHoursEn: z.string().trim().min(1),
-  specialNoticeCa: z.string().trim().optional(),
-  specialNoticeEs: z.string().trim().optional(),
-  specialNoticeEn: z.string().trim().optional(),
+  manualOpeningHoursCa: z.string().trim().min(1).max(2000),
+  manualOpeningHoursEs: z.string().trim().min(1).max(2000),
+  manualOpeningHoursEn: z.string().trim().min(1).max(2000),
+  specialNoticeCa: z.string().trim().max(300).optional(),
+  specialNoticeEs: z.string().trim().max(300).optional(),
+  specialNoticeEn: z.string().trim().max(300).optional(),
+  onlineOrdersEnabled: z.coerce.boolean().default(false),
+  pickupEnabled: z.coerce.boolean().default(false),
+  deliveryEnabled: z.coerce.boolean().default(false),
+  deliveryPostalCodes: z.string().trim().max(500).optional(),
+  deliveryFee: optionalMoneySchema,
+  deliveryMinimumOrder: optionalMoneySchema,
+  deliveryMessageCa: z.string().trim().max(500).optional(),
+  deliveryMessageEs: z.string().trim().max(500).optional(),
+  deliveryMessageEn: z.string().trim().max(500).optional(),
 });
 
 export async function loginAction(formData: FormData) {
@@ -179,7 +268,7 @@ export async function loginAction(formData: FormData) {
     redirect("/admin/login?error=missing-env");
   }
 
-  if (email !== adminEmail || password !== adminPassword) {
+  if (!constantTimeEqual(email, adminEmail) || !constantTimeEqual(password, adminPassword)) {
     redirect("/admin/login?error=invalid");
   }
 
@@ -192,7 +281,7 @@ export async function loginAction(formData: FormData) {
     maxAge: 60 * 60 * 8,
   });
 
-  redirect(nextPath.startsWith("/admin") ? nextPath : "/admin");
+  redirect(isSafeAdminRedirect(nextPath) ? nextPath : "/admin");
 }
 
 export async function logoutAction() {
@@ -246,6 +335,20 @@ export async function uploadAdminImageAction(
     };
   }
 
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const hasValidSignature =
+    (extension === "jpg" && bytes.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) ||
+    (extension === "png" && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) ||
+    (extension === "webp" && bytes.subarray(0, 4).toString("ascii") === "RIFF" && bytes.subarray(8, 12).toString("ascii") === "WEBP") ||
+    (extension === "gif" && ["GIF87a", "GIF89a"].includes(bytes.subarray(0, 6).toString("ascii")));
+
+  if (!hasValidSignature) {
+    return {
+      status: "error",
+      message: "El archivo no parece ser una imagen válida.",
+    };
+  }
+
   const originalName = file.name
     .replace(/\.[^/.]+$/, "")
     .normalize("NFD")
@@ -255,11 +358,18 @@ export async function uploadAdminImageAction(
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
   const filename = `${originalName || "imagen"}-${crypto.randomUUID()}.${extension}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "admin");
-  const uploadPath = path.join(uploadDir, filename);
+  const uploadDir = path.resolve(process.cwd(), "public", "uploads", "admin");
+  const uploadPath = path.resolve(uploadDir, filename);
+
+  if (!uploadPath.startsWith(`${uploadDir}${path.sep}`)) {
+    return {
+      status: "error",
+      message: "Nombre de archivo no válido.",
+    };
+  }
 
   await mkdir(uploadDir, { recursive: true });
-  await writeFile(uploadPath, Buffer.from(await file.arrayBuffer()));
+  await writeFile(uploadPath, bytes);
 
   return {
     status: "success",
@@ -276,7 +386,7 @@ export async function saveProductAction(
   const dbError = requireDatabase();
   if (dbError) return dbError;
 
-  const parsed = productSchema.safeParse(Object.fromEntries(formData));
+  const parsed = productSchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Producto inválido.");
 
   const data = parsed.data;
@@ -338,7 +448,7 @@ export async function saveCategoryAction(_state: AdminActionState, formData: For
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = categorySchema.safeParse(Object.fromEntries(formData));
+  const parsed = categorySchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Categoría inválida.");
   const data = parsed.data;
   const payload = {
@@ -365,7 +475,7 @@ export async function updateOrderStatusAction(_state: AdminActionState, formData
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = orderStatusSchema.safeParse(Object.fromEntries(formData));
+  const parsed = orderStatusSchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Pedido inválido.");
   await prisma.order.update({
     where: { id: parsed.data.id },
@@ -379,7 +489,7 @@ export async function saveBlogPostAction(_state: AdminActionState, formData: For
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = blogSchema.safeParse(Object.fromEntries(formData));
+  const parsed = blogSchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Artículo inválido.");
   const data = parsed.data;
   const existingPost =
@@ -439,7 +549,7 @@ export async function saveGalleryImageAction(_state: AdminActionState, formData:
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = gallerySchema.safeParse(Object.fromEntries(formData));
+  const parsed = gallerySchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Imagen inválida.");
   const data = parsed.data;
   const altText = data.altCa || data.altEs || data.altEn || data.titleCa || data.titleEs || data.titleEn;
@@ -557,7 +667,7 @@ export async function saveBannerAction(_state: AdminActionState, formData: FormD
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = bannerSchema.safeParse(Object.fromEntries(formData));
+  const parsed = bannerSchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Promoción inválida.");
   const data = parsed.data;
   const payload = {
@@ -593,11 +703,15 @@ export async function saveSettingsAction(_state: AdminActionState, formData: For
   if (!(await requireAdmin())) return fail("No tienes permiso.");
   const dbError = requireDatabase();
   if (dbError) return dbError;
-  const parsed = settingsSchema.safeParse(Object.fromEntries(formData));
+  const parsed = settingsSchema.safeParse(formEntries(formData));
   if (!parsed.success) return fail(parsed.error.issues[0]?.message || "Ajustes inválidos.");
+  const payload = {
+    ...parsed.data,
+    deliveryRequestEnabled: parsed.data.deliveryEnabled,
+  };
   const existing = await prisma.storeSettings.findFirst();
-  if (existing) await prisma.storeSettings.update({ where: { id: existing.id }, data: parsed.data });
-  else await prisma.storeSettings.create({ data: parsed.data });
+  if (existing) await prisma.storeSettings.update({ where: { id: existing.id }, data: payload });
+  else await prisma.storeSettings.create({ data: payload });
   revalidatePath("/admin/settings");
   return ok("Ajustes guardados correctamente.");
 }

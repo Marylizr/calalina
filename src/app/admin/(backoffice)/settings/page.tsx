@@ -119,12 +119,80 @@ export default async function AdminSettingsPage() {
             </label>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            {["Pedidos online", "Recogida", "Solicitud de entrega"].map((setting) => (
-              <label key={setting} className="flex items-center gap-3 rounded-2xl bg-[#fff5e1] px-4 py-3 text-sm font-black">
-                <input type="checkbox" defaultChecked={setting !== "Pedidos online"} className="h-5 w-5 accent-[#e5261f]" />
-                {setting}
-              </label>
-            ))}
+            <label className="flex items-center gap-3 rounded-2xl bg-[#fff5e1] px-4 py-3 text-sm font-black">
+              <input
+                type="checkbox"
+                name="onlineOrdersEnabled"
+                defaultChecked={adminSettings.onlineOrdersEnabled}
+                className="h-5 w-5 accent-[#e5261f]"
+              />
+              Pedidos online
+            </label>
+            <label className="flex items-center gap-3 rounded-2xl bg-[#fff5e1] px-4 py-3 text-sm font-black">
+              <input
+                type="checkbox"
+                name="pickupEnabled"
+                defaultChecked={adminSettings.pickupEnabled}
+                className="h-5 w-5 accent-[#e5261f]"
+              />
+              Recogida
+            </label>
+            <label className="flex items-center gap-3 rounded-2xl bg-[#fff5e1] px-4 py-3 text-sm font-black">
+              <input
+                type="checkbox"
+                name="deliveryEnabled"
+                defaultChecked={adminSettings.deliveryEnabled}
+                className="h-5 w-5 accent-[#e5261f]"
+              />
+              Delivery local
+            </label>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-[1fr_12rem_12rem]">
+            <label className="grid gap-2 text-sm font-black">
+              Códigos postales delivery
+              <input
+                name="deliveryPostalCodes"
+                className={inputClass}
+                defaultValue={adminSettings.deliveryPostalCodes}
+                placeholder="08025, 08037, 08013"
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-black">
+              Fee delivery
+              <input
+                name="deliveryFee"
+                type="number"
+                min="0"
+                step="0.01"
+                className={inputClass}
+                defaultValue={adminSettings.deliveryFee}
+              />
+            </label>
+            <label className="grid gap-2 text-sm font-black">
+              Mínimo delivery
+              <input
+                name="deliveryMinimumOrder"
+                type="number"
+                min="0"
+                step="0.01"
+                className={inputClass}
+                defaultValue={adminSettings.deliveryMinimumOrder}
+              />
+            </label>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
+            <label className="grid gap-2 text-sm font-black">
+              Mensaje delivery CA
+              <textarea name="deliveryMessageCa" className={`${inputClass} min-h-28`} defaultValue={adminSettings.deliveryMessageCa} />
+            </label>
+            <label className="grid gap-2 text-sm font-black">
+              Mensaje delivery ES
+              <textarea name="deliveryMessageEs" className={`${inputClass} min-h-28`} defaultValue={adminSettings.deliveryMessageEs} />
+            </label>
+            <label className="grid gap-2 text-sm font-black">
+              Mensaje delivery EN
+              <textarea name="deliveryMessageEn" className={`${inputClass} min-h-28`} defaultValue={adminSettings.deliveryMessageEn} />
+            </label>
           </div>
         </AdminActionForm>
       </AdminCard>

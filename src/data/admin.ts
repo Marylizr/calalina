@@ -288,4 +288,16 @@ export const adminSettings = {
   specialNoticeCa: "",
   specialNoticeEs: "",
   specialNoticeEn: "",
+  onlineOrdersEnabled: false,
+  pickupEnabled: true,
+  deliveryEnabled: true,
+  deliveryPostalCodes: "08025, 08037, 08013",
+  deliveryFee: "3.50",
+  deliveryMinimumOrder: "",
+  deliveryMessageCa:
+    "Ara mateix nomes fem delivery en zones properes a la botiga. Pots triar recollida a botiga o consultar-nos per WhatsApp.",
+  deliveryMessageEs:
+    "Ahora mismo solo hacemos delivery en zonas cercanas a la tienda. Puedes elegir recogida en tienda o consultarnos por WhatsApp.",
+  deliveryMessageEn:
+    "Local delivery is currently available only near the shop. You can choose store pickup or contact us on WhatsApp.",
 };

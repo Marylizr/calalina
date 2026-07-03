@@ -43,11 +43,20 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                 <h2 className="font-serif text-2xl font-black">{order.id} · {order.customer}</h2>
                 <p className="text-sm font-bold text-[#4a4842]">{order.phone} · {order.fulfillment} · {order.createdAt}</p>
                 <div className="mt-3 grid gap-1 text-sm font-bold text-[#4a4842]">
+                  {order.pickupDate ? <p>Recogida: {order.pickupDate}</p> : null}
+                  {order.deliveryAddress ? (
+                    <p>
+                      Delivery: {order.deliveryAddress}
+                      {order.deliveryPostalCode ? ` · ${order.deliveryPostalCode}` : ""}
+                    </p>
+                  ) : null}
+                  {order.deliveryInstructions ? <p>Instrucciones: {order.deliveryInstructions}</p> : null}
                   {order.items?.map((item) => (
                     <p key={item.id}>
                       {item.name} · {item.quantity} {item.unit} · {item.lineTotal}
                     </p>
                   ))}
+                  {order.deliveryFee ? <p>Delivery: {order.deliveryFee}</p> : null}
                   <p className="font-black text-[#102b56]">Total estimado: {order.total}</p>
                   {order.notes ? <p>Nota cliente: {order.notes}</p> : null}
                   {order.internalNote ? <p>Nota interna: {order.internalNote}</p> : null}
@@ -67,12 +76,26 @@ export default async function AdminOrdersPage({ searchParams }: AdminOrdersPageP
                   </select>
                   <input name="internalNote" className="rounded-2xl border border-[#a96532]/20 bg-white px-4 py-2 text-sm font-bold" placeholder="Nota interna" />
                 </AdminActionForm>
-                <a
-                  className="rounded-full bg-[#2f6b35] px-4 py-2 text-center text-sm font-black text-white"
-                  href={`https://wa.me/${order.phone.replace(/\D/g, "")}?text=Hola%20${encodeURIComponent(order.customer)},%20te%20escribimos%20de%20Calalina%20sobre%20tu%20pedido%20${order.id}.`}
-                >
-                  WhatsApp
-                </a>
+                {order.shopWhatsappUrl ? (
+                  <a
+                    className="rounded-full bg-[#2f6b35] px-4 py-2 text-center text-sm font-black text-white"
+                    href={order.shopWhatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Enviar WhatsApp a la botiga
+                  </a>
+                ) : null}
+                {order.customerWhatsappUrl ? (
+                  <a
+                    className="rounded-full bg-[#102b56] px-4 py-2 text-center text-sm font-black text-white"
+                    href={order.customerWhatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Contactar client
+                  </a>
+                ) : null}
               </div>
             </article>
           ))}

@@ -5,7 +5,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function getRuntimeDatabaseUrl() {
-  return process.env.DIRECT_URL || process.env.DATABASE_URL;
+  return process.env.DATABASE_URL || process.env.DIRECT_URL;
 }
 
 export const prisma =

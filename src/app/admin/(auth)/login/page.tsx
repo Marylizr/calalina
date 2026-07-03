@@ -1,4 +1,5 @@
 import { loginAction } from "../../actions";
+import { PasswordInput } from "@/components/admin/PasswordInput";
 
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -44,16 +45,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
               className="rounded-2xl border border-[#a96532]/20 bg-white px-4 py-3 font-bold outline-none focus:border-[#e5261f] focus:ring-4 focus:ring-[#e5261f]/10"
             />
           </label>
-          <label className="grid gap-2 text-sm font-black">
-            Contraseña
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="rounded-2xl border border-[#a96532]/20 bg-white px-4 py-3 font-bold outline-none focus:border-[#e5261f] focus:ring-4 focus:ring-[#e5261f]/10"
-            />
-          </label>
+          <PasswordInput />
           <button className="mt-2 rounded-full bg-[#e5261f] px-6 py-4 text-sm font-black text-white shadow-[0_16px_34px_rgba(229,38,31,0.22)] transition hover:bg-[#102b56]">
             Acceder
           </button>

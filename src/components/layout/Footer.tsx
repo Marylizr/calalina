@@ -25,7 +25,7 @@ export function Footer({ locale, content }: FooterProps) {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_1.4fr_1fr] lg:px-8">
         <div>
           <Link href={`/${locale}#inici`} className="inline-flex items-center gap-3">
-            <span className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-white shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+            <span className="grid h-14 w-14 place-items-center overflow-hidden">
               <Image
                 src={LOGO_SRC}
                 alt=""

@@ -6,9 +6,20 @@ import { cartSubtotal, formatMoney } from "@/lib/cart";
 import { useCart } from "@/components/cart/CartProvider";
 import { CartItemRow } from "@/components/cart/CartItemRow";
 
-export function CartSummary({ locale, checkout = false }: { locale: Locale; checkout?: boolean }) {
+export function CartSummary({
+  locale,
+  checkout = false,
+  fulfillmentMethod = "pickup",
+  deliveryFee = 0,
+}: {
+  locale: Locale;
+  checkout?: boolean;
+  fulfillmentMethod?: "pickup" | "delivery";
+  deliveryFee?: number;
+}) {
   const { items } = useCart();
   const subtotal = cartSubtotal(items);
+  const estimatedTotal = subtotal + (fulfillmentMethod === "delivery" ? deliveryFee : 0);
   const copy = getSiteContent(locale).cart;
 
   return (
@@ -19,9 +30,21 @@ export function CartSummary({ locale, checkout = false }: { locale: Locale; chec
         </p>
       )}
       <div className="rounded-2xl bg-white/85 p-4">
-        <div className="flex items-center justify-between text-lg font-black text-[var(--color-dark-ink)]">
+        <div className="grid gap-2 text-sm font-black text-[var(--color-dark-ink)]">
+          <div className="flex items-center justify-between">
+            <span>{copy.subtotal}</span>
+            <span>{formatMoney(subtotal, locale)}</span>
+          </div>
+          {fulfillmentMethod === "delivery" ? (
+            <div className="flex items-center justify-between">
+              <span>{copy.deliveryFee}</span>
+              <span>{formatMoney(deliveryFee, locale)}</span>
+            </div>
+          ) : null}
+        </div>
+        <div className="mt-3 flex items-center justify-between border-t border-[var(--color-wood-brown)]/15 pt-3 text-lg font-black text-[var(--color-dark-ink)]">
           <span>{copy.estimatedTotal}</span>
-          <span>{formatMoney(subtotal, locale)}</span>
+          <span>{formatMoney(estimatedTotal, locale)}</span>
         </div>
         <p className="mt-3 text-sm font-bold leading-6 text-[var(--color-muted-text)]">
           {copy.estimatedNote}

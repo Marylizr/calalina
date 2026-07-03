@@ -9,6 +9,11 @@ import {
   adminSeasonalHighlights,
   adminSettings,
 } from "@/data/admin";
+import {
+  buildOrderWhatsAppMessage,
+  buildWhatsAppUrl,
+  normalizeWhatsAppNumber,
+} from "@/lib/whatsapp";
 
 function money(value: { toString(): string } | number | string) {
   return Number(value.toString()).toLocaleString("es-ES", {
@@ -98,6 +103,13 @@ export async function getAdminOrders(filter?: { status?: string; date?: string }
       email: "",
       notes: "",
       internalNote: "",
+      pickupDate: "",
+      deliveryAddress: "",
+      deliveryPostalCode: "",
+      deliveryInstructions: "",
+      deliveryFee: "",
+      shopWhatsappUrl: "",
+      customerWhatsappUrl: "",
       items: [],
     }));
   }
@@ -105,48 +117,106 @@ export async function getAdminOrders(filter?: { status?: string; date?: string }
   try {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    const orders = await prisma.order.findMany({
-      include: { items: true },
-      where:
-        filter?.status === "pending"
-          ? { status: { in: ["new", "confirmed", "preparing", "readyForPickup"] } }
-          : filter?.date === "today"
-            ? { createdAt: { gte: startOfDay } }
-            : undefined,
-      orderBy: { createdAt: "desc" },
-    });
+    const [orders, settings] = await Promise.all([
+      prisma.order.findMany({
+        include: { items: true },
+        where:
+          filter?.status === "pending"
+            ? { status: { in: ["new", "confirmed", "preparing", "readyForPickup"] } }
+            : filter?.date === "today"
+              ? { createdAt: { gte: startOfDay } }
+              : undefined,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.storeSettings.findFirst({ orderBy: { updatedAt: "desc" } }),
+    ]);
+    const shopWhatsapp =
+      normalizeWhatsAppNumber(settings?.whatsapp) ||
+      normalizeWhatsAppNumber(process.env.NEXT_PUBLIC_SHOP_WHATSAPP_NUMBER);
 
-    return orders.map((order) => ({
-      id: order.id,
-      customer: order.customerName,
-      phone: order.customerPhone,
-      email: order.customerEmail || "",
-      status: orderStatus(order.status),
-      fulfillment: order.fulfillmentMethod === "pickup" ? "Recogida" : "Entrega",
-      total: money(order.total),
-      notes: order.notes || "",
-      internalNote: order.internalNote || "",
-      items: order.items.map((item) => ({
-        id: item.id,
+    return orders.map((order) => {
+      const fulfillmentMethod =
+        order.fulfillmentMethod === "pickup" ? "pickup" : "delivery";
+      const rawItems = order.items.map((item) => ({
         name: item.productNameSnapshot,
         quantity: Number(item.quantity),
         unit: item.unit,
-        unitPrice: money(item.unitPriceSnapshot),
-        lineTotal: money(item.lineTotal),
-      })),
-      createdAt: order.createdAt.toLocaleString("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    }));
+        lineTotal: Number(item.lineTotal),
+      }));
+      const shopMessage = buildOrderWhatsAppMessage(
+        {
+          id: order.id,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          fulfillmentMethod,
+          pickupDate: order.pickupDate,
+          deliveryAddress: [order.deliveryAddress, order.deliveryAddressExtra]
+            .filter(Boolean)
+            .join(" · "),
+          deliveryPostalCode: order.deliveryPostalCode,
+          items: rawItems,
+          subtotal: Number(order.subtotal),
+          deliveryFee: order.deliveryFee ? Number(order.deliveryFee) : null,
+          total: Number(order.total),
+          notes: order.notes,
+        },
+        "es",
+      );
+      const customerMessage = `Hola, somos Calalina. Hemos recibido tu pedido ${order.id.slice(-6).toUpperCase()} y te escribimos para confirmarlo.`;
+
+      return {
+        id: order.id,
+        customer: order.customerName,
+        phone: order.customerPhone,
+        email: order.customerEmail || "",
+        status: orderStatus(order.status),
+        fulfillment: fulfillmentMethod === "pickup" ? "Recogida" : "Entrega",
+        pickupDate: order.pickupDate
+          ? order.pickupDate.toLocaleString("es-ES", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "",
+        deliveryAddress: [order.deliveryAddress, order.deliveryAddressExtra].filter(Boolean).join(" · "),
+        deliveryPostalCode: order.deliveryPostalCode || "",
+        deliveryInstructions: order.deliveryInstructions || "",
+        deliveryFee: order.deliveryFee ? money(order.deliveryFee) : "",
+        total: money(order.total),
+        notes: order.notes || "",
+        internalNote: order.internalNote || "",
+        shopWhatsappUrl: shopWhatsapp ? buildWhatsAppUrl(shopWhatsapp, shopMessage) : "",
+        customerWhatsappUrl: buildWhatsAppUrl(order.customerPhone, customerMessage),
+        items: order.items.map((item) => ({
+          id: item.id,
+          name: item.productNameSnapshot,
+          quantity: Number(item.quantity),
+          unit: item.unit,
+          unitPrice: money(item.unitPriceSnapshot),
+          lineTotal: money(item.lineTotal),
+        })),
+        createdAt: order.createdAt.toLocaleString("es-ES", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+    });
   } catch {
     return adminOrders.map((order) => ({
       ...order,
       email: "",
       notes: "",
       internalNote: "",
+      pickupDate: "",
+      deliveryAddress: "",
+      deliveryPostalCode: "",
+      deliveryInstructions: "",
+      deliveryFee: "",
+      shopWhatsappUrl: "",
+      customerWhatsappUrl: "",
       items: [],
     }));
   }
@@ -338,6 +408,15 @@ export async function getAdminSettings() {
       specialNoticeCa: settings.specialNoticeCa || "",
       specialNoticeEs: settings.specialNoticeEs || "",
       specialNoticeEn: settings.specialNoticeEn || "",
+      onlineOrdersEnabled: settings.onlineOrdersEnabled,
+      pickupEnabled: settings.pickupEnabled,
+      deliveryEnabled: settings.deliveryEnabled,
+      deliveryPostalCodes: settings.deliveryPostalCodes || "",
+      deliveryFee: settings.deliveryFee ? money(settings.deliveryFee) : "",
+      deliveryMinimumOrder: settings.deliveryMinimumOrder ? money(settings.deliveryMinimumOrder) : "",
+      deliveryMessageCa: settings.deliveryMessageCa || "",
+      deliveryMessageEs: settings.deliveryMessageEs || "",
+      deliveryMessageEn: settings.deliveryMessageEn || "",
     };
   } catch {
     return adminSettings;

@@ -37,7 +37,7 @@ export function AdminShell({ children, userEmail, logoutAction }: AdminShellProp
     <div className="min-h-screen bg-[#f8efe2] text-[var(--color-dark-ink)]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-[#a96532]/15 bg-[#fff5e1]/95 px-5 py-6 shadow-[18px_0_48px_rgba(169,101,50,0.08)] lg:block">
         <Link href="/admin" className="flex items-center gap-3">
-          <span className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-white shadow-sm">
+          <span className="relative grid h-12 w-12 place-items-center overflow-hidden">
             <Image src="/images/brand/logo.png" alt="" width={40} height={44} className="h-10 w-auto object-contain" />
           </span>
           <span>

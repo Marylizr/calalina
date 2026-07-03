@@ -675,6 +675,51 @@ async function main() {
     });
   }
 
+  const existingSettings = await prisma.storeSettings.findFirst();
+  const defaultStoreSettings = {
+    businessName: "Fruteria Calalina",
+    address: "Passeig de Sant Joan, 195 - CALALINA, 08037 Barcelona",
+    phone: "+34 932 10 21 53",
+    email: "hola@calalina.cat",
+    googleMapsUrl: "https://www.google.com/maps/place/Fruteria+Calalina/",
+    googleMapsEmbedUrl:
+      "https://maps.google.com/maps?q=Fruteria%20Calalina%2C%20Passeig%20de%20Sant%20Joan%20195%2C%20Barcelona&z=17&output=embed",
+    useGoogleHours: true,
+    onlineOrdersEnabled: true,
+    pickupEnabled: true,
+    deliveryEnabled: true,
+    deliveryRequestEnabled: true,
+    deliveryPostalCodes: "08025,08037,08013",
+    deliveryFee: 3.5,
+    manualOpeningHoursCa:
+      "Dimarts a dijous: 9:00-14:00 / 17:00-20:00\nDivendres: 9:00-15:00 / 17:00-20:00\nDissabte: 9:00-14:00\nDiumenge i dilluns: Tancat",
+    manualOpeningHoursEs:
+      "Martes a jueves: 9:00-14:00 / 17:00-20:00\nViernes: 9:00-15:00 / 17:00-20:00\nSábado: 9:00-14:00\nDomingo y lunes: Cerrado",
+    manualOpeningHoursEn:
+      "Tuesday to Thursday: 9:00-14:00 / 17:00-20:00\nFriday: 9:00-15:00 / 17:00-20:00\nSaturday: 9:00-14:00\nSunday and Monday: Closed",
+    deliveryMessageCa:
+      "Ara mateix nomes fem delivery en zones properes a la botiga. Pots triar recollida a botiga o consultar-nos per WhatsApp.",
+    deliveryMessageEs:
+      "Ahora mismo solo hacemos delivery en zonas cercanas a la tienda. Puedes elegir recogida en tienda o consultarnos por WhatsApp.",
+    deliveryMessageEn:
+      "Local delivery is currently available only near the shop. You can choose store pickup or contact us on WhatsApp.",
+  };
+
+  if (existingSettings) {
+    await prisma.storeSettings.update({
+      where: { id: existingSettings.id },
+      data: {
+        pickupEnabled: true,
+        deliveryEnabled: true,
+        deliveryRequestEnabled: true,
+        deliveryPostalCodes: existingSettings.deliveryPostalCodes || defaultStoreSettings.deliveryPostalCodes,
+        deliveryFee: existingSettings.deliveryFee ?? defaultStoreSettings.deliveryFee,
+      },
+    });
+  } else {
+    await prisma.storeSettings.create({ data: defaultStoreSettings });
+  }
+
   if (process.env.ADMIN_EMAIL) {
     await prisma.user.upsert({
       where: { email: process.env.ADMIN_EMAIL },
